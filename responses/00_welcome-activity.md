@@ -1,6 +1,6 @@
 ## Using GitHub Script in a workflow
 
-Actions are enabled on your repository by default, but we still have to tell our repository to use them. We do this by creating a workflow file in our repository.
+Actions are enabled on your repository by default, but we still have to tell our repository to use them. You can do this by creating a workflow file in our repository.
 
 If you've been following the learning path for GitHub Actions then this task is quite familiar to you.
 
@@ -49,7 +49,7 @@ Your repository can contain multiple **workflow** files that carry out a wide va
    ```
 
 1. Commit the workflow to a new branch.
-1. Create a pull request. I suggest a title like **Automate issue responses**.
+1. Create a pull request. A suggestion for title could be **Automate issue responses**.
 1. Supply the pull request body content and click **Create pull request**.
 
 <details><summary>About pull pull request titles and content</summary>
@@ -66,4 +66,4 @@ You can fill the body of this pull request with the following recommended conten
 
 ---
 
-I am waiting for you to create a new pull request before moving on.
+Create a new pull request, then the lesson will continue.

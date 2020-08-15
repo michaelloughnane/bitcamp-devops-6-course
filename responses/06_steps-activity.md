@@ -1,6 +1,6 @@
 # Add steps for each action
 
-We will make the following changes to the current workflow file:
+Make the following changes to the current workflow file:
 
 - Name each step so we can easily keep track of it in the [actions tab]({{store.actionsUrl}})
 - Use expressions to determine `if` a step should execute
@@ -47,11 +47,11 @@ We will make the following changes to the current workflow file:
    ```
 
 2. Commit the workflow to a new branch.
-3. Create a pull request, I suggest the title **Create better comments**.
+3. Create a pull request - a title suggestion could be **Create better comments**.
 4. Supply the pull request body content and click **Create pull request**.
 
 ---
 
-I am waiting for you to create a new pull request before moving on.
+This bot is waiting for you to create a new pull request before moving on.
 
-I'll respond in the pull request you create
+It will respond in the pull request you create.

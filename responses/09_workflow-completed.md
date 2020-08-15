@@ -6,4 +6,4 @@ As you can see, there is now a more comprehensive response to a new issue being 
 
 **What about all the extra logic?**
 
-You're right! We added some expression logic to the workflow that will only add an issue to the project board, if it contains the `bug` label at the time of creation. Let's see if our logic works as intended!
+You're right! We added some expression logic to the workflow that will only add an issue to the project board, if it contains the `bug` label at the time of creation. Let's see if your logic works as intended!

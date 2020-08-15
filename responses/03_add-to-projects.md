@@ -1,12 +1,13 @@
 # Let's add a card to a project board
 
-We have added [a project board]({{ store.projectUrl }}) to this repository for you. We will use this board, named **Learning Lab Project Board**, to add cards to when a new issue is created in your repository!
+You have added [a project board]({{ store.projectUrl }}) to this repository for you. We will use this board, named **Learning Lab Project Board**, to add cards to when a new issue is created in your repository!
 
 Like creating comments and opening pull requests, octokit/rest.js can be used for many more types of interactions. Managing GitHub Projects makes that list!
 
 <details><summary>Things aren't always as they appear!</summary>
 <br>
-Although this is not a course on octokit/rest.js, it is important to tell you a little secret right here before we move on. For you to be able to use the `projects.createCard()` method there were some pieces of information we needed beforehand. Things like the `column_id` so we know which column to add the card to and even a `project_id` so we know which board that column belongs to.
+Although this is not a course on octokit/rest.js, it is important to tell you a little secret right here before moving on. For you to be able to use the `projects.createCard()` method there were some pieces of information we needed beforehand. Things like the `column_id` so we know which column to add the card to and even a `project_id` so we know which board that column belongs to.
+
 
 We've gone ahead and done this on our end of things so that we could give you the final piece to the puzzle and demonstrate how to use GitHub Script. So if you try to recreate this on your own, without the help of Learning Lab you will need to get that information and parse it in a way that works well for your use case!
 
@@ -45,11 +46,11 @@ We've gone ahead and done this on our end of things so that we could give you th
    ```
 
 2. Commit the workflow to a new branch.
-3. Create a pull request, I suggest the title **Add issues to project board**.
+3. Create a pull request - a suggestion for the title could be **Add issues to project board**.
 4. Supply the pull request body content and click **Create pull request**.
 
 ---
 
-I am waiting for you to create a new pull request before moving on.
+This bot is waiting for you to create a new pull request before moving on.
 
-I'll respond in the new pull request when I detect it has been created.
+Once the new pull request has been created, check the bot's response to it for the next step.

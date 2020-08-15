@@ -8,6 +8,4 @@
 
 ---
 
-I am waiting for you to open a new issue before moving on.
-
-I'll respond in your new issue once you've opened it
+This bot will respond in your new issue once you've opened it.

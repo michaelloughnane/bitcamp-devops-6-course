@@ -1,6 +1,6 @@
 # Hi there 👋!
 
-Hello @{{user.login}}, I'm so excited to teach you how to use GitHub Script in your workflows 😄
+Hello @{{user.login}}, now you get to learn how to use GitHub Script in your workflows 😄
 
 ## What is GitHub Script?
 
@@ -14,4 +14,4 @@ This allows you to use the workflow context to script any API usage that is avai
 
 📖 See [octokit/rest.js](https://octokit.github.io/rest.js/) for the API client documentation.
 
-Let's take a closer look at how this action compares to Octokit.
+Now, take a closer look at how this action compares to Octokit.

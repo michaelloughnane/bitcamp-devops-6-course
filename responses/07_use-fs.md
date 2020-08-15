@@ -1,6 +1,6 @@
 ## Use the FS module to use a templated comment
 
-We will make the following changes to the current workflow file:
+Make the following changes to the current workflow file:
 
 - Add the `actions/checkout` action so we can read the templated response file located at `.github/ISSUE_RESPONSES/comment.md`
 - Add JavaScript to use the Node.js File System module to place the contents of our templated response as the body of the issue comment.
@@ -55,6 +55,6 @@ We will make the following changes to the current workflow file:
 
 ---
 
-I am waiting for you to commit the desired changes to this branch before moving on.
+This bot is waiting for you to commit the desired changes to this branch before moving on.
 
-I'll respond once you've committed the changes to this branch
+It will respond once you've committed the changes to this branch.

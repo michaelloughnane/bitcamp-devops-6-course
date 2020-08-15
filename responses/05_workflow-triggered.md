@@ -1,6 +1,6 @@
 ## Great job @{{user.login}}
 
-Now that your updates have been merged and we've triggered the workflow we should see our workflow begin helping us automate the triage of new issues.
+Now that your updates have been merged and the workflow has been triggered we should see our workflow begin helping us automate the triage of new issues.
 
 <details>
   <summary>Workflow not running? Click here for some troubleshooting.</summary>
@@ -15,4 +15,4 @@ If you need to make changes to your code, remove the [master branch protection](
 
 ---
 
-I'll respond once your workflow has completed!
+This bot will respond once your workflow has completed!

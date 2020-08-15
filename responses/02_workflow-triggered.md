@@ -2,7 +2,7 @@
 
 Super awesome job so far!
 
-Do you remember what our workflow trigger was?
+Do you remember what the workflow trigger was?
 
 ```yaml
 on:
@@ -27,4 +27,4 @@ If you need to make changes to your code, remove the [master branch protection](
 
 ---
 
-I'll respond in this issue after your workflow runs!
+This bot will respond in this issue after your workflow runs!

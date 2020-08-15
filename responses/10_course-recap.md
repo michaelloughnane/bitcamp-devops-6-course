@@ -16,4 +16,4 @@ That should give you quite the start with incorporating the GitHub Script action
 
 ---
 
-Congratulations on finishing this course. You will receive no further responses from me, however further action taken in this repo could trigger workflow runs, because of this we recommend commenting out the workflow file if you plan to keep this repository for notes!
+Congratulations on finishing this course. You will receive no further bot responses, however further action taken in this repo could trigger workflow runs, and because of this we recommend commenting out the workflow file if you plan to keep this repository for notes!

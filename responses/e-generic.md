@@ -1,3 +1,3 @@
-Oops! I was expecting you to take **{{ expected }}**.
+Oops! You were expected to take **{{ expected }}**.
 
-I'll respond when you take the expected action.
+This bot will respond when you take the expected action.
