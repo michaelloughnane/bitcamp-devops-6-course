@@ -4,13 +4,413 @@ template:
   repo: bitcamp-devops-6-template
   name: bitcamp-devops-6
 before:
+  - type: updateBranchProtection
+    store:
+      repositoryUrl: '{{ payload.repository.html_url }}'
+      actionsUrl: '{{ payload.repository.html_url }}/actions'
+      workflowEditUrl: '{{ payload.repository.html_url }}/edit/master/.github/workflows/my-workflow.yml'
+      branchSettingsUrl: '{{ payload.repository.html_url }}/settings/branches'
+  - type: createProjectBoard
+    name: Learning Lab Project Board
+    description: >-
+      This board is used with the GitHub Actions: Using GitHub Script Learning Lab course.
+    columns:
+      - Triage Backlog
+      - Triage Complete
+    store:
+      projectUrl: "{{ result.data.html_url }}"
   - type: createIssue
-    title: Welcome!
-    body: new-issue.md
+    title: Start here!
+    body: 00_welcome-issue.md
+    store:
+      welcomeIssueUrl: "%result.data.html_url%"
+      welcomeIssueNumber: "%result.data.number%"
+    data:
+      quicklink: "{{ store.repositoryUrl }}/new/master?filename=.github/workflows/my-workflow.yml"
+      actionsUrl: "{{ store.repositoryUrl }}/actions/new"
+    comments:
+      - 00_explain-gh-script.md
+      - 00_octokit-comparison.md
+      - 00_welcome-activity.md
+
 steps:
-  - title: First step
-    description: The first step in your course
-    event: issues.assigned
-    link: '{{ repoUrl }}'
+  - title: Start here!
+    description: Create a pull request to add a workflow
+    event:
+      - pull_request.opened
+      - pull_request.edited
+    link: "{{store.welcomeIssueUrl}}"
     actions:
+      # Validate the filepath for the my-workflow.yml file
+      # get tree
+      - type: getTree
+        action_id: isInTree
+        recursive: true
+        sha: "%payload.pull_request.head.sha%"
+        store:
+          firstPullNumber: "%payload.pull_request.number%"
+          firstPullUrl: "%payload.pull_request.html_url%"
+
+      # check for a file in a tree
+      - type: gate
+        left: "%actions.isInTree.data.tree%"
+        operator: includes
+        right: "path:.github/workflows/my-workflow.yml"
+        else:
+          # if file isn't where expected find true location
+          - type: findInTree
+            path: my-workflow.yml
+            tree: "%actions.isInTree.data.tree%"
+            action_id: fileLocation
+          # help user with proper file location
+          - type: respond
+            with: e-wrong-file-location.md
+            data:
+              haveFile: "%actions.fileLocation.path%"
+              needFile: ".github/workflows/my-workflow.yml"
+              editLink: "%payload.repository.html_url%/edit/%payload.pull_request.head.ref%/%actions.fileLocation.path%"
+              fileName: my-workflow.yml
+        # End filepath verification
+        #######################################################
+      - type: respond
+        issue: "%store.welcomeIssueNumber%"
+        with: new-pull-request.md
+        data:
+          pullUrl: '{{ store.firstPullUrl }}'
       - type: closeIssue
+        issue: "%store.welcomeIssueNumber%"
+      - type: createReview
+        body: 01_merge-workflow.md
+        event: APPROVE
+
+  - title: Merge your first pull request
+    description: Make the workflow available to the repository by merging the pull request
+    event: pull_request.closed
+    link: "{{store.firstPullUrl}}"
+    actions:
+      - type: gate
+        every: true
+        gates:
+          - left: '{{ payload.pull_request.number }}'
+            operator: ===
+            right: '{{ store.firstPullNumber }}'
+          - left: '{{ payload.pull_request.merged }}'
+        else:
+          - type: respond
+            with: e-generic.md
+            data:
+              expected: 'merge pull request #{{ store.firstPullNumber }}'
+      - type: createIssue
+        title: Create an issue comment with GitHub Script
+        body: 02_workflow-triggered.md
+        store:
+          secondIssueNumber: "%result.data.number%"
+          secondIssueUrl: "%result.data.html_url%"
+      - type: respond
+        with: new-issue.md
+        issue: "%store.firstPullNumber%"
+        data:
+          issueUrl: '{{ store.secondIssueUrl }}'
+
+  - title: Add another GitHub Script action
+    description: Use GitHub Script to place this issue into a project board
+    # event: check_suite.completed # issue_comment.created/edited
+    event: issue_comment.created
+    link: "{{store.secondIssueUrl}}"
+    actions:
+      - type: gate
+        left: "%payload.comment.user.login%"
+        operator: ===
+        right: "github-actions[bot]"
+        else:
+          - type: respond
+            issue: "%store.secondIssueNumber%"
+            with: debug.md
+            data:
+              debug: "%payload%"
+      - type: respond
+        with: 03_workflow-success.md
+        issue: "%store.secondIssueNumber%"
+      - type: octokit
+        method: projects.listForRepo
+        owner: "%payload.repository.owner.login%"
+        repo: "%payload.repository.name%"
+        store:
+          boardID: "%result.data.0.id%"
+      - type: octokit
+        method: projects.listColumns
+        project_id: "%store.boardID%"
+        store:
+          columnID: "%result.data.0.id%"
+      - type: respond
+        with: 03_add-to-projects.md
+        issue: "%store.secondIssueNumber%"
+        data:
+          columnID: "%store.columnID%"
+          quicklink: "%payload.repository.html_url%/edit/master/.github/workflows/my-workflow.yml"
+    #  new pull request
+  - title: Modify your workflow file
+    description: Create a pull request to add changes to your workflow
+    event:
+      - pull_request.opened
+      - pull_request.edited
+    link: "{{ store.secondIssueUrl }}"
+    actions:
+      #######################################################
+      # Validate the filepath for the my-workflow.yml file
+      # get tree
+      - type: getTree
+        action_id: isInTree
+        recursive: true
+        sha: "%payload.pull_request.head.sha%"
+        store:
+          secondPullNumber: "%payload.pull_request.number%"
+          secondPullUrl: "%payload.pull_request.html_url%"
+      # check for a file in a tree
+      - type: gate
+        left: "%actions.isInTree.data.tree%"
+        operator: includes
+        right: "path:.github/workflows/my-workflow.yml"
+        else:
+          # if file isn't where expected find true location
+          - type: findInTree
+            path: my-workflow.yml
+            tree: "%actions.isInTree.data.tree%"
+            # multiple: true
+            action_id: fileLocation
+          # help user with proper file location
+          - type: respond
+            with: e-wrong-file-location.md
+            data:
+              haveFile: "%actions.fileLocation.path%"
+              needFile: ".github/actions/cat-facts/action.yml"
+              editLink: "%payload.repository.html_url%/edit/%payload.pull_request.head.ref%/%actions.fileLocation.path%"
+              fileName: my-workflow.yml
+        # End filepath verification
+        #######################################################
+      - type: respond
+        issue: "%store.secondIssueNumber%"
+        with: new-pull-request.md
+        data:
+          pullUrl: "%store.secondPullUrl%"
+      - type: closeIssue
+        issue: "%store.secondIssueNumber%"
+      - type: createReview
+        body: 04_merge-workflow.md
+        event: APPROVE
+        data:
+          actionsUrl: "%payload.repository.html_url%/actions"
+
+  - title: Merge the updated workflow into the master branch
+    description: Make the workflow available for use on the repository
+    event: pull_request.closed
+    link: "{{ store.secondPullUrl }}"
+    actions:
+      - type: gate
+        every: true
+        gates:
+          - left: '{{ payload.pull_request.number }}'
+            operator: ===
+            right: '{{ store.secondPullNumber }}'
+          - left: '{{ payload.pull_request.merged }}'
+        else:
+          - type: respond
+            with: e-generic.md
+            data:
+              expected: 'merge pull request #{{ store.secondPullNumber }}'
+      - type: createIssue
+        title: Comment and triage with GitHub Script
+        body: 05_workflow-triggered.md
+        action_id: triggerIssue
+        store:
+          thirdIssueUrl: "%result.data.html_url%"
+          thirdIssueNumber: "%result.data.number%"
+      - type: respond
+        with: new-issue.md
+        issue: "%store.secondPullNumber%"
+        data:
+          issueUrl: "%store.thirdIssueUrl%"
+
+  - title: Break your workflow into multiple steps
+    description: Separate the workflow concerns by adding more steps
+    event: issue_comment.created
+    link: "{{store.thirdIssueUrl}}"
+    actions:
+      - type: gate
+        left: "%payload.comment.user.login%"
+        operator: ===
+        right: "github-actions[bot]"
+        else:
+          - type: respond
+            issue: "%store.secondIssueNumber%"
+            with: debug.md
+            data:
+              debug: "%payload%"
+      - type: octokit
+        method: projects.listForRepo
+        owner: "%payload.repository.owner.login%"
+        repo: "%payload.repository.name%"
+        action_id: projectBoard
+      - type: octokit
+        method: projects.listColumns
+        project_id: "%actions.projectBoard.data.0.id%"
+        action_id: listColumns
+      - type: respond
+        with: 06_steps-overview.md
+        issue: "%store.thirdIssueNumber%"
+        data:
+          projectTab: "%payload.repository.html_url%/projects/1"
+      - type: respond
+        with: 06_steps-activity.md
+        issue: "%store.thirdIssueNumber%"
+        data:
+          listProj: "%actions.projectBoard.data%"
+          listCol: "%actions.listColumns.data%"
+          columnID: "%actions.listColumns.data.0.id%"
+          quicklink: "%payload.repository.html_url%/edit/master/.github/workflows/my-workflow.yml"
+
+  - title: Create better comments
+    description: Use a templated repsonse as the comment body
+    event:
+      - pull_request.opened
+      - pull_request.edited
+    link: "{{store.thirdPullUrl}}"
+    actions:
+      - type: octokit
+        method: projects.listForRepo
+        owner: "%payload.repository.owner.login%"
+        repo: "%payload.repository.name%"
+        action_id: projectBoard
+        store:
+          thirdPullNumber: "%payload.pull_request.number%"
+          thirdPullUrl: "%payload.pull_request.html_url%"
+      - type: octokit
+        method: projects.listColumns
+        project_id: "%actions.projectBoard.data.0.id%"
+        action_id: listColumns
+      - type: respond
+        issue: "%store.thirdIssueNumber%"
+        with: new-pull-request.md
+        data:
+          pullUrl: "%store.thirdPullUrl%"
+      - type: closeIssue
+        issue: "%store.thirdIssueNumber%"
+      - type: respond
+        with: 07_explain-node.md
+      - type: respond
+        with: 07_use-fs.md
+        data:
+          columnID: "%actions.listColumns.data.0.id%"
+          quicklink: "%payload.repository.html_url%/edit/%payload.pull_request.head.ref%/.github/workflows/my-workflow.yml"
+
+  - title: Use a templated response
+    description: Create the comment body from a template using the Node.js file system module
+    event: pull_request.synchronize
+    link: "{{store.thirdPullUrl}}"
+    actions:
+      - type: gate
+        left: '{{ payload.pull_request.number }}'
+        operator: ===
+        right: '{{ store.thirdPullNumber }}'
+        else:
+          - type: respond
+            with: e-generic.md
+            data:
+              expected: 'push a commit to #{{ store.thirdPullNumber }}'
+      - type: createReview
+        body: 08_merge-workflow.md
+        event: APPROVE
+
+  - title: Merge the updated workflow
+    description: Merge the worklow to the master branch
+    event: pull_request.closed
+    link: "{{store.thirdPullUrl}}"
+    actions:
+      - type: gate
+        every: true
+        gates:
+          - left: '{{ payload.pull_request.number }}'
+            operator: ===
+            right: '{{ store.thirdPullNumber }}'
+          - left: '{{ payload.pull_request.merged }}'
+        else:
+          - type: respond
+            with: e-generic.md
+            data:
+              expected: 'merge pull request #{{ store.thirdPullNumber }}'
+      - type: octokit
+        action_id: triggerIssue
+        method: issues.create
+        owner: "%payload.repository.owner.login%"
+        repo: "%payload.repository.name%"
+        title: It's alive!
+        body: |
+          ## Great Job so far!  
+
+          Like before, now we have to wait for the workflow to run so that we can see the results.  
+
+          <details>
+            <summary>Workflow not running? Click here for some troubleshooting.</summary>
+
+          Try the following troubleshooting steps:
+          1. Click on the [Actions tab]({{ store.actionsUrl }}) to see the status of your workflow run. See [Managing a workflow run](https://help.github.com/en/actions/configuring-and-managing-workflows/managing-a-workflow-run) on GitHub Help for more information.
+          1. Edit your [workflow file]( {{ store.workflowEditUrl }}) and look for errors in the linter built into the browser.
+          1. Look for the [workflow trigger](https://help.github.com/en/actions/reference/events-that-trigger-workflows) and ensure you are performing an action that triggers that workflow.
+
+          If you need to make changes to your code, remove the [master branch protection]({{ store.branchSettingsUrl }}) and merge your changes into the `master` branch.
+          </details>
+
+          ---
+
+          I'll respond here once it has completed!
+        labels: ["bug"]
+        store:
+          fourthIssueUrl: "%result.data.html_url%"
+          fourthIssueNumber: "%result.data.number%"
+
+      - type: respond
+        with: new-issue.md
+        issue: "%store.thirdPullNumber%"
+        data:
+          issueUrl: "%store.fourthIssueUrl%"
+
+  - title: Another workflow run
+    description: Observe the results of an enhanced workflow run
+    event: check_suite.completed
+    link: "{{store.fourthIssueUrl}}"
+    actions:
+      - type: gate
+        left: "%payload.check_suite.app.name%"
+        operator: ===
+        right: "GitHub Actions"
+        else:
+          - type: respond
+            with: e-action-result.md
+      - type: respond
+        with: 09_workflow-completed.md
+        issue: "%store.fourthIssueNumber%"
+      - type: respond
+        with: 09_issue-activity.md
+        issue: "%store.fourthIssueNumber%"
+        data:
+          quicklink: "%payload.repository.html_url%/issues/new"
+
+  - title: Course recap
+    description: Final notes on course
+    event: check_suite.completed
+    link: "{{repoUrl}}/issue/8"
+    actions:
+      - type: gate
+        left: "%payload.check_suite.app.name%"
+        operator: ===
+        right: "GitHub Actions"
+        else:
+          - type: respond
+            with: e-action-result.md
+      - type: respond
+        with: 10_workflow-completed.md
+        issue: 8
+      - type: respond
+        with: 10_course-recap.md
+        issue: 8
+      - type: removeBranchProtection
